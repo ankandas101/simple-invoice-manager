@@ -363,8 +363,20 @@ class Install
     protected static function dbTransaction($sql)
     {
         try {
-            $expression = DB::raw($sql);
-            DB::unprepared($expression->getValue(DB::connection()->getQueryGrammar()));
+            // Split SQL statements by semicolon and execute each one
+            $statements = array_filter(
+                array_map('trim', explode(';', $sql)),
+                function ($statement) {
+                    return !empty($statement) && !preg_match('/^\-\-/', $statement);
+                }
+            );
+
+            foreach ($statements as $statement) {
+                if (!empty(trim($statement))) {
+                    DB::unprepared($statement);
+                }
+            }
+
             $result = ['success' => true, 'message' => 'Database tables are created.'];
         } catch (\Exception $e) {
             $result = ['success' => false, 'SQL: unable to create tables, ' . $e->getMessage()];
