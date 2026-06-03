@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Artisan;
 
 class Install
 {
@@ -55,11 +54,19 @@ class Install
 
         // Manual verification for testing/development
         if ($data['license']['code'] === 'ankandas123') {
-            // Run Laravel migrations for manual verification
             try {
-                \Artisan::call('migrate', ['--force' => true]);
-                $result = ['success' => true, 'message' => 'Database tables created successfully.'];
-                Storage::disk('local')->put('keys.json', '{ "sim": "' . $data['license']['code'] . '" }');
+                // Load and execute the database schema SQL file
+                $sqlFile = storage_path('app/database.sql');
+                if (File::exists($sqlFile)) {
+                    $sql = File::get($sqlFile);
+                    $result = self::dbTransaction($sql);
+                } else {
+                    $result = ['success' => false, 'message' => 'Database schema file not found. Please check with developer.'];
+                }
+                
+                if ($result['success'] ?? false) {
+                    Storage::disk('local')->put('keys.json', '{ "sim": "' . $data['license']['code'] . '" }');
+                }
             } catch (\Exception $e) {
                 $result = ['success' => false, 'message' => 'Failed to create database tables: ' . $e->getMessage()];
             }
