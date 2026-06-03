@@ -2,6 +2,38 @@
 
 SET FOREIGN_KEY_CHECKS = 0;
 
+-- Drop existing tables to ensure clean installation
+DROP TABLE IF EXISTS `invoice_item_tax_rate`;
+DROP TABLE IF EXISTS `quotation_item_tax_rate`;
+DROP TABLE IF EXISTS `invoice_tax_rate`;
+DROP TABLE IF EXISTS `quotation_tax_rate`;
+DROP TABLE IF EXISTS `payment_tax_rate`;
+DROP TABLE IF EXISTS `product_tax_rate`;
+DROP TABLE IF EXISTS `invoice_items`;
+DROP TABLE IF EXISTS `quotation_items`;
+DROP TABLE IF EXISTS `invoices`;
+DROP TABLE IF EXISTS `quotations`;
+DROP TABLE IF EXISTS `payments`;
+DROP TABLE IF EXISTS `products`;
+DROP TABLE IF EXISTS `tax_rates`;
+DROP TABLE IF EXISTS `notes`;
+DROP TABLE IF EXISTS `fields`;
+DROP TABLE IF EXISTS `categories`;
+DROP TABLE IF EXISTS `customers`;
+DROP TABLE IF EXISTS `companies`;
+DROP TABLE IF EXISTS `settings`;
+DROP TABLE IF EXISTS `activity_log`;
+DROP TABLE IF EXISTS `model_has_permissions`;
+DROP TABLE IF EXISTS `model_has_roles`;
+DROP TABLE IF EXISTS `role_has_permissions`;
+DROP TABLE IF EXISTS `roles`;
+DROP TABLE IF EXISTS `permissions`;
+DROP TABLE IF EXISTS `team_invitations`;
+DROP TABLE IF EXISTS `team_user`;
+DROP TABLE IF EXISTS `teams`;
+DROP TABLE IF EXISTS `personal_access_tokens`;
+DROP TABLE IF EXISTS `users`;
+
 -- Users table
 CREATE TABLE IF NOT EXISTS `users` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
