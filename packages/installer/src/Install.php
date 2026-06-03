@@ -206,6 +206,7 @@ SQL;
         $user = $userData;
         $account = Account::create(['name' => $user['name']]);
         $user['phone'] = '0123456789';
+        $user['username'] = strtolower(str_replace(' ', '_', $user['name']));
         $user['password'] = Hash::make($user['password']);
         $user['email_verified_at'] = now();
         $user['account_id'] = $account->id;
