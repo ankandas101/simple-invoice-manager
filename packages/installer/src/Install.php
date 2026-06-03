@@ -151,6 +151,7 @@ SQL;
     }
 
     public static function createTables(Request $request, $data, $installation_id = null)
+    {
         $result = self::isDbValid($data);
         if (! $result || $result['success'] == false) {
             return $result;
