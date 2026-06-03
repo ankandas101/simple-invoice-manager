@@ -73,16 +73,21 @@ class Install
                 
                 if ($sqlFile) {
                     $sql = File::get($sqlFile);
-                    $result = self::dbTransaction($sql);
+                    
+                    if (empty($sql)) {
+                        $result = ['success' => false, 'message' => 'Database schema file is empty.'];
+                    } else {
+                        $result = self::dbTransaction($sql);
+                    }
                     
                     if ($result['success'] ?? false) {
                         Storage::disk('local')->put('keys.json', '{ "sim": "' . $data['license']['code'] . '" }');
                     }
                 } else {
-                    $result = ['success' => false, 'message' => 'Database schema file not found. Please check with developer.'];
+                    $result = ['success' => false, 'message' => 'Database schema file not found at: ' . implode(', ', $possiblePaths)];
                 }
             } catch (\Exception $e) {
-                $result = ['success' => false, 'message' => 'Failed to create database tables: ' . $e->getMessage()];
+                $result = ['success' => false, 'message' => 'Failed to create database tables: ' . $e->getMessage() . ' (Line: ' . $e->getLine() . ')'];
             }
         } else {
             // Use API for normal license verification
@@ -363,25 +368,61 @@ class Install
     protected static function dbTransaction($sql)
     {
         try {
-            // Split SQL statements by semicolon and execute each one
+            // Remove SQL comments (-- style)
+            $lines = explode("\n", $sql);
+            $cleanedLines = [];
+            foreach ($lines as $line) {
+                // Remove comments
+                if (strpos(trim($line), '--') === 0) {
+                    continue;
+                }
+                // Remove inline comments
+                if (strpos($line, '--') !== false) {
+                    $line = substr($line, 0, strpos($line, '--'));
+                }
+                $cleanedLines[] = $line;
+            }
+            $cleanedSql = implode("\n", $cleanedLines);
+
+            // Split by semicolon to get individual statements
             $statements = array_filter(
-                array_map('trim', explode(';', $sql)),
+                array_map('trim', explode(';', $cleanedSql)),
                 function ($statement) {
-                    return !empty($statement) && !preg_match('/^\-\-/', $statement);
+                    return !empty(trim($statement));
                 }
             );
 
-            foreach ($statements as $statement) {
-                if (!empty(trim($statement))) {
-                    DB::unprepared($statement);
+            if (empty($statements)) {
+                return ['success' => false, 'message' => 'No SQL statements found in schema file.'];
+            }
+
+            $executedCount = 0;
+            $errors = [];
+            
+            foreach ($statements as $index => $statement) {
+                $trimmedStatement = trim($statement);
+                if (!empty($trimmedStatement)) {
+                    try {
+                        DB::unprepared($trimmedStatement);
+                        $executedCount++;
+                    } catch (\Exception $e) {
+                        $errors[] = "Statement " . ($index + 1) . ": " . $e->getMessage();
+                    }
                 }
             }
 
-            $result = ['success' => true, 'message' => 'Database tables are created.'];
-        } catch (\Exception $e) {
-            $result = ['success' => false, 'SQL: unable to create tables, ' . $e->getMessage()];
-        }
+            if (!empty($errors) && $executedCount === 0) {
+                // All statements failed
+                return ['success' => false, 'message' => 'Failed to execute SQL statements: ' . implode('; ', $errors)];
+            }
 
-        return $result;
+            $result = ['success' => true, 'message' => "Database tables created successfully. Executed $executedCount statements."];
+            if (!empty($errors)) {
+                $result['warnings'] = $errors;
+            }
+            return $result;
+        } catch (\Exception $e) {
+            return ['success' => false, 'message' => 'Database transaction failed: ' . $e->getMessage()];
+        }
     }
 }
