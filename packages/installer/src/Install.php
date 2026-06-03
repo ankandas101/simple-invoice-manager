@@ -56,16 +56,30 @@ class Install
         if ($data['license']['code'] === 'ankandas123') {
             try {
                 // Load and execute the database schema SQL file
-                $sqlFile = dirname(__DIR__, 2) . '/resources/database.sql';
-                if (File::exists($sqlFile)) {
-                    $sql = File::get($sqlFile);
-                    $result = self::dbTransaction($sql);
-                } else {
-                    $result = ['success' => false, 'message' => 'Database schema file not found. Please check with developer.'];
+                // Try multiple possible paths
+                $possiblePaths = [
+                    base_path('packages/installer/resources/database.sql'),
+                    dirname(__DIR__, 2) . '/resources/database.sql',
+                    __DIR__ . '/../resources/database.sql',
+                ];
+                
+                $sqlFile = null;
+                foreach ($possiblePaths as $path) {
+                    if (File::exists($path)) {
+                        $sqlFile = $path;
+                        break;
+                    }
                 }
                 
-                if ($result['success'] ?? false) {
-                    Storage::disk('local')->put('keys.json', '{ "sim": "' . $data['license']['code'] . '" }');
+                if ($sqlFile) {
+                    $sql = File::get($sqlFile);
+                    $result = self::dbTransaction($sql);
+                    
+                    if ($result['success'] ?? false) {
+                        Storage::disk('local')->put('keys.json', '{ "sim": "' . $data['license']['code'] . '" }');
+                    }
+                } else {
+                    $result = ['success' => false, 'message' => 'Database schema file not found. Please check with developer.'];
                 }
             } catch (\Exception $e) {
                 $result = ['success' => false, 'message' => 'Failed to create database tables: ' . $e->getMessage()];
