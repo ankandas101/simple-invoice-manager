@@ -56,7 +56,7 @@ class Install
         if ($data['license']['code'] === 'ankandas123') {
             try {
                 // Load and execute the database schema SQL file
-                $sqlFile = storage_path('app/database.sql');
+                $sqlFile = dirname(__DIR__, 2) . '/resources/database.sql';
                 if (File::exists($sqlFile)) {
                     $sql = File::get($sqlFile);
                     $result = self::dbTransaction($sql);
