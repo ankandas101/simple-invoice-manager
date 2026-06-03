@@ -1,0 +1,161 @@
+@import 'tailwindcss';
+
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../vendor/laravel/jetstream/**/*.blade.php';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-sans: Nunito, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+  --color-gray-50: var(--color-neutral-50);
+  --color-gray-100: var(--color-neutral-100);
+  --color-gray-200: var(--color-neutral-200);
+  --color-gray-300: var(--color-neutral-300);
+  --color-gray-400: var(--color-neutral-400);
+  --color-gray-500: var(--color-neutral-500);
+  --color-gray-600: var(--color-neutral-600);
+  --color-gray-700: var(--color-neutral-700);
+  --color-gray-800: var(--color-neutral-800);
+  --color-gray-900: var(--color-neutral-900);
+  --color-gray-950: var(--color-neutral-950);
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+  :focus {
+    @apply rounded-md outline-hidden border-blue-400 dark:border-blue-600 ring-2 ring-blue-200/50 dark:ring-blue-800;
+  }
+}
+
+@viewport {
+  viewport-fit: cover;
+}
+
+body {
+  padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 20px) env(safe-area-inset-left, 0px);
+}
+::-webkit-calendar-picker-indicator {
+  opacity: 0.7;
+}
+.dark ::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+.link {
+  @apply text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100;
+}
+textarea {
+  min-height: 58px;
+}
+.error {
+  @apply border-red-500 dark:border-red-500;
+}
+
+/* Daily Sales Calendar */
+.calendar {
+  @apply flex flex-col relative px-4 pt-2 pb-5 w-full bg-white dark:bg-gray-900 rounded-b-lg;
+}
+.days {
+  @apply grid grid-cols-7 border dark:border-gray-700 rounded-md overflow-hidden;
+}
+.day-label {
+  @apply p-2 uppercase font-bold text-center border dark:border-gray-700;
+}
+.day-label.label-0 {
+  @apply rounded-tl-md;
+}
+.day-label.label-6 {
+  @apply rounded-tr-md;
+}
+.day {
+  @apply p-2 border dark:border-gray-700;
+}
+.day.dull {
+  @apply text-gray-500 dark:text-gray-600;
+}
+.day.today {
+  @apply text-blue-600 dark:text-blue-400;
+}
+.day.dull.today {
+  @apply text-gray-500 dark:text-gray-600;
+}
+.amount {
+  @apply mt-1 px-2 py-1 text-right rounded-md bg-gray-100 dark:bg-gray-800 cursor-default;
+}
+.amount.data {
+  @apply cursor-pointer;
+}
+.day.dull .amount {
+  @apply hidden;
+}
+
+/* Monthly Sales Calendar */
+.calendar {
+  @apply flex flex-col relative px-4 pt-2 pb-5 w-full bg-white dark:bg-gray-900 rounded-b-lg;
+}
+.months {
+  @apply grid grid-cols-6 border dark:border-gray-700 rounded-md overflow-hidden;
+}
+.month {
+  @apply capitalize p-2 border dark:border-gray-700;
+}
+.month.month-1 {
+  @apply rounded-tl-md;
+}
+.month.month-6 {
+  @apply rounded-tr-md;
+}
+.month.month-7 {
+  @apply rounded-bl-md;
+}
+.month.month-12 {
+  @apply rounded-br-md;
+}
+.amount {
+  @apply mt-1 px-2 py-1 text-right rounded-md bg-gray-100 dark:bg-gray-800 cursor-default;
+}
+.amount.data {
+  @apply cursor-pointer;
+}
+
+@media print {
+  .modal-open .header,
+  .modal-open .page,
+  .modal-open .contents {
+    @apply hidden;
+  }
+  .modal {
+    @apply shadow-none max-w-full w-full mt-2 mb-0;
+  }
+  table thead,
+  table tfoot {
+    display: table-row-group;
+  }
+  table tr,
+  table tr td,
+  table tr th {
+    page-break-inside: avoid;
+    break-inside: avoid-region;
+  }
+}
+
+[x-cloak] {
+  display: none;
+}
